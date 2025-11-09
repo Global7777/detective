@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математический детектив</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0c0c2b, #1a1a3e);
+            color: #e0e0ff;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            background-image: url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAQABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+        }
+        
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(20, 20, 40, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            position: relative;
+        }
+        
+        .author-info {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #ffd700;
+            text-align: center;
+            background: rgba(10, 10, 30, 0.9);
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 1px solid #ffd700;
+            width: 90%;
+            max-width: 400px;
+            z-index: 100;
+        }
+        
+        .screen {
+            display: none;
+            text-align: center;
+        }
+        
+        .active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+        
+        h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .clue-box {
+            background: rgba(30, 30, 60, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            color: #e0e0ff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .problem {
+            font-size: 26px;
+            margin: 20px 0;
+            color: #ffd700;
+            background: rgba(40, 40, 70, 0.6);
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            font-weight: bold;
+        }
+        
+        input {
+            padding: 14px;
+            font-size: 20px;
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            margin: 12px;
+            width: 120px;
+            text-align: center;
+            color: #1a1a2e;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+            transform: scale(1.05);
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            color: #1a1a2e;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+        
+        .next-button {
+            background: linear-gradient(45deg, #00cc00, #7cfc00);
+            color: #1a1a2e;
+        }
+        
+        .skip-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff4500);
+            color: white;
+        }
+        
+        .evidence {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 25px 0;
+        }
+        
+        .evidence-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 140px;
+            color: #e0e0ff;
+            transition: all 0.3s;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            margin: 25px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd700);
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .feedback {
+            font-size: 20px;
+            margin: 18px 0;
+            min-height: 30px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .correct { 
+            color: #7cfc00; 
+            background: rgba(124, 252, 0, 0.1);
+        }
+        
+        .wrong { 
+            color: #ff6b6b; 
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .evidence-collected {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .section-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .section-card {
+            background: rgba(40, 40, 70, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            width: 260px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            color: #e0e0ff;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+            border-color: #ffd700;
+        }
+        
+        .section-icon {
+            font-size: 45px;
+            margin-bottom: 18px;
+        }
+        
+        .section-difficulty {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .points-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 30, 0.9);
+            padding: 12px 18px;
+            border-radius: 20px;
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 14px 28px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #e0e0ff;
+            font-size: 16px;
+            border: 1px solid transparent;
+        }
+        
+        .difficulty-btn.active {
+            background: #ffd700;
+            color: #1a1a2e;
+            font-weight: bold;
+            border-color: #ffd700;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        p, small {
+            color: #e0e0ff;
+            line-height: 1.6;
+        }
+        
+        .case-counter {
+            color: #ffd700;
+            font-weight: bold;
+            margin: 15px 0;
+            font-size: 1.2em;
+        }
+        
+        .evidence-found {
+            background: rgba(124, 252, 0, 0.2);
+            border: 1px solid #7cfc00;
+            transform: scale(1.05);
+        }
+        
+        .difficulty-indicator {
+            color: #ffd700;
+            font-size: 18px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .reward-info {
+            color: #ffd700;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        
+        .attempts-counter {
+            color: #ffd700;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="points-display" id="points-display">Баллы: 0</div>
+
+        <!-- Главный экран -->
+        <div id="screen-start" class="screen active">
+            <h1>🔍 Математический детектив</h1>
+            <div class="clue-box">
+                <p>Добро пожаловать в детективное агентство, где раскрытие преступлений требует математических навыков!</p>
+                <p>Выберите раздел математики и начните расследование. Решайте задачи, собирайте улики и зарабатывайте баллы!</p>
+            </div>
+            
+            <h2>🔎 Разделы расследования:</h2>
+            <div class="section-selector">
+                <div class="section-card" onclick="selectSection('logarithms')">
+                    <div class="section-difficulty">★☆☆</div>
+                    <div class="section-icon">🔐</div>
+                    <h3>Логарифмы</h3>
+                    <p>Расследование кражи алмаза "Слеза Королевы"</p>
+                    <p><small>Основы логарифмических вычислений</small></p>
+                </div>
+                <div class="section-card" onclick="selectSection('trigonometry')">
+                    <div class="section-difficulty">★★☆</div>
+                    <div class="section-icon">📐</div>
+                    <h3>Тригонометрия</h3>
+                    <p>Поиск пропавшего артефакта в древнем храме</p>
+                    <p><small>Тригонометрические функции и уравнения</small></p>
+                </div>
+                <div class="section-card" onclick="selectSection('derivative')">
+                    <div class="section-difficulty">★★☆</div>
+                    <div class="section-icon">📈</div>
+                    <h3>Производные</h3>
+                    <p>Расшифровка кода финансового мошенничества</p>
+                    <p><small>Дифференцирование и анализ функций</small></p>
+                </div>
+                <div class="section-card" onclick="selectSection('function-analysis')">
+                    <div class="section-difficulty">★★★</div>
+                    <div class="section-icon">🔍</div>
+                    <h3>Исследование функций</h3>
+                    <p>Анализ маршрута беглеца через производные</p>
+                    <p><small>Полное исследование функций</small></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Выбор сложности -->
+        <div id="screen-difficulty" class="screen">
+            <h1 id="section-title">Выбор сложности</h1>
+            <div class="clue-box">
+                <p id="section-description">Выберите уровень сложности для этого расследования:</p>
+                <div class="difficulty-selector">
+                    <div class="difficulty-btn" onclick="selectDifficulty('easy', this)">Новичок (10 баллов)</div>
+                    <div class="difficulty-btn" onclick="selectDifficulty('medium', this)">Детектив (20 баллов)</div>
+                    <div class="difficulty-btn" onclick="selectDifficulty('hard', this)">Эксперт (30 баллов)</div>
+                </div>
+                <p class="reward-info">Чем сложнее уровень, тем больше баллов вы получите за каждое решенное задание!</p>
+            </div>
+            <div class="button-container">
+                <button class="back-button" onclick="showScreen('screen-start')">← Назад</button>
+                <button onclick="startTutorial()">Начать расследование</button>
+            </div>
+        </div>
+
+        <!-- Обучение -->
+        <div id="screen-tutorial" class="screen">
+            <h1 id="tutorial-title">📚 База знаний детектива</h1>
+            <div class="clue-box" id="tutorial-content"></div>
+            <div class="button-container">
+                <button class="back-button" onclick="showScreen('screen-difficulty')">← Назад</button>
+                <button onclick="startCase(1)">Понял! К делу!</button>
+            </div>
+        </div>
+
+        <!-- Экран с заданиями -->
+        <div id="screen-case-container" class="screen"></div>
+
+        <!-- Победа -->
+        <div id="screen-victory" class="screen">
+            <h1>🎉 Поздравляем, детектив!</h1>
+            <div class="clue-box">
+                <p id="victory-message">Вы успешно раскрыли дело!</p>
+                <p class="evidence-collected" id="points-earned"></p>
+            </div>
+            <div class="evidence" id="victory-evidence"></div>
+            <div class="button-container">
+                <button onclick="showScreen('screen-cheatsheet')">Получить шпаргалку</button>
+                <button onclick="returnToMain()">Вернуться к выбору раздела</button>
+            </div>
+        </div>
+
+        <!-- Шпаргалка -->
+        <div id="screen-cheatsheet" class="screen">
+            <h1 id="cheatsheet-title">📖 Шпаргалка детектива</h1>
+            <div class="clue-box" id="cheatsheet-content"></div>
+            <div class="button-container">
+                <button class="back-button" onclick="showScreen('screen-victory')">← Назад</button>
+                <button onclick="returnToMain()">Вернуться к выбору раздела</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="author-info">
+        Разработчик: Студент ТТИТ Лутфуллин Дмитрий. Все права защищены.
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let currentSection = '';
+        let currentDifficulty = '';
+        let currentCase = 1;
+        const totalCases = 5;
+        let points = 0;
+        let foundEvidence = [];
+        let completedCases = new Set();
+        let wrongAttempts = {}; // Объект для отслеживания неправильных попыток по делам
+
+        // Исправленные данные для каждого раздела и сложности
+        const sections = {
+            logarithms: {
+                title: "Логарифмы",
+                description: "Расследование кражи алмаза 'Слеза Королевы'",
+                tutorial: `
+                    <p><strong>Логарифм</strong> - это вопрос:</p>
+                    <p>"В какую степень нужно возвести ОСНОВАНИЕ, чтобы получить ЧИСЛО?"</p>
+                    <p class="problem">log₂(8) = ?</p>
+                    <p>Спрашиваем: "2 в какой степени даст 8?"</p>
+                    <p>Ответ: 3, потому что 2³ = 8</p>
+                `,
+                cases: {
+                    easy: [
+                        { problem: "log₂(32) + log₃(81) = ?", answer: 9, evidence: "🔐 Сейф взломан" },
+                        { problem: "log₁₀(100) = ?", answer: 2, evidence: "🌳 Дерево найдено" },
+                        { problem: "ln(e⁵) = ?", answer: 5, evidence: "⏰ Время установлено" },
+                        { problem: "2 × log₅(25) + log₅(5) - log₅(5) = ?", answer: 4, evidence: "💎 Адрес раскрыт" },
+                        { problem: "log₂(x) = 4, найдите x", answer: 16, evidence: "🔑 Ключ получен" }
+                    ],
+                    medium: [
+                        { problem: "log₂(64) + log₃(27) + log₅(25) = ?", answer: 11, evidence: "🔐 Сейф взломан" },
+                        { problem: "log₂(128) - log₂(8) = ?", answer: 4, evidence: "🌳 Дерево найдено" },
+                        { problem: "2 × ln(e³) + log₁₀(1000) = ?", answer: 9, evidence: "⏰ Время установлено" },
+                        { problem: "3 × log₂(8) + log₃(81) - log₅(125) = ?", answer: 10, evidence: "💎 Адрес раскрыт" },
+                        { problem: "log₂(x²) = 6, найдите x", answer: 8, evidence: "🔑 Ключ получен" }
+                    ],
+                    hard: [
+                        { problem: "log₂(512) + log₃(729) - log₅(125) + log₇(49) = ?", answer: 14, evidence: "🔐 Сейф взломан" },
+                        { problem: "log₂(x) + log₂(4x) = 6, найдите x", answer: 4, evidence: "🌳 Дерево найдено" },
+                        { problem: "2 × ln(e⁵) + 3 × log₁₀(100) - log₂(32) = ?", answer: 11, evidence: "⏰ Время установлено" },
+                        { problem: "log₂(x+1) + log₂(x+3) = 3, найдите x", answer: 3, evidence: "💎 Адрес раскрыт" },
+                        { problem: "log₂(x) = 3, найдите x", answer: 8, evidence: "🔑 Ключ получен" }
+                    ]
+                },
+                victory: "Вы успешно раскрыли дело! Преступники задержаны, алмаз 'Слеза Королевы' возвращен в музей.",
+                cheatsheet: `
+                    <p><strong>Основные правила логарифмов:</strong></p>
+                    <p>logₐ(b) = c, если aᶜ = b</p>
+                    <p>logₐ(a) = 1</p>
+                    <p>logₐ(1) = 0</p>
+                    <p>logₐ(b) + logₐ(c) = logₐ(b×c)</p>
+                    <p>logₐ(b) - logₐ(c) = logₐ(b/c)</p>
+                    <p>k × logₐ(b) = logₐ(bᵏ)</p>
+                `
+            },
+            trigonometry: {
+                title: "Тригонометрия",
+                description: "Поиск пропавшего артефакта в древнем храме",
+                tutorial: `
+                    <p><strong>Тригонометрия</strong> изучает соотношения между сторонами и углами треугольников.</p>
+                    <p>Основные тригонометрические функции:</p>
+                    <p>sin(α) - отношение противолежащего катета к гипотенузе</p>
+                    <p>cos(α) - отношение прилежащего катета к гипотенузе</p>
+                    <p>tg(α) - отношение противолежащего катета к прилежащему</p>
+                `,
+                cases: {
+                    easy: [
+                        { problem: "sin(x) = 1/2, где x ∈ [0, 90°]", answer: 30, evidence: "🗺️ Карта расшифрована" },
+                        { problem: "2cos(x) = 1, где x ∈ [0, 90°]", answer: 60, evidence: "🔍 Механизм активирован" },
+                        { problem: "tg(x) = 1, где x ∈ [0, 90°]", answer: 45, evidence: "⚖️ Весы уравновешены" },
+                        { problem: "sin(x) = 0.6, найдите x (округлите до целого)", answer: 37, evidence: "🏺 Артефакт найден" },
+                        { problem: "tg(x) = 3/4, найдите x (округлите до целого)", answer: 37, evidence: "🔮 Тайна раскрыта" }
+                    ],
+                    medium: [
+                        { problem: "2sin(x) = √3, где x ∈ [0, 90°]", answer: 60, evidence: "🗺️ Карта расшифрована" },
+                        { problem: "cos(2x) = 1/2, где x ∈ [0, 90°]", answer: 30, evidence: "🔍 Механизм активирован" },
+                        { problem: "tg(2x) = √3, где x ∈ [0, 90°]", answer: 30, evidence: "⚖️ Весы уравновешены" },
+                        { problem: "sin(x)cos(x) = 1/4, найдите x", answer: 15, evidence: "🏺 Артефакт найден" },
+                        { problem: "2cos²(x) - 1 = 1/2, найдите x", answer: 30, evidence: "🔮 Тайна раскрыта" }
+                    ],
+                    hard: [
+                        { problem: "sin(3x) = √3/2, где x ∈ [0, 90°]", answer: 20, evidence: "🗺️ Карта расшифрована" },
+                        { problem: "2cos²(x) - 3cos(x) + 1 = 0, где x ∈ [0, 90°]", answer: 60, evidence: "🔍 Механизм активирован" },
+                        { problem: "tg²(x) - 3tg(x) + 2 = 0, где x ∈ [0, 90°]", answer: 45, evidence: "⚖️ Весы уравновешены" },
+                        { problem: "sin(x) + cos(x) = √2, найдите x в градусах", answer: 45, evidence: "🏺 Артефакт найден" },
+                        { problem: "2sin(x)cos(x) = √3/2, найдите x в градусах", answer: 30, evidence: "🔮 Тайна раскрыта" }
+                    ]
+                },
+                victory: "Вы нашли древний артефакт! Тайна храма раскрыта, артефакт возвращен в музей.",
+                cheatsheet: `
+                    <p><strong>Основные тригонометрические тождества:</strong></p>
+                    <p>sin²(α) + cos²(α) = 1</p>
+                    <p>tg(α) = sin(α)/cos(α)</p>
+                    <p>sin(30°) = 1/2, cos(30°) = √3/2</p>
+                    <p>sin(45°) = cos(45°) = √2/2</p>
+                    <p>sin(60°) = √3/2, cos(60°) = 1/2</p>
+                `
+            },
+            derivative: {
+                title: "Производные",
+                description: "Расшифровка кода финансового мошенничества",
+                tutorial: `
+                    <p><strong>Производная</strong> функции показывает скорость изменения функции в данной точке.</p>
+                    <p>Основные правила дифференцирования:</p>
+                    <p>Производная константы: (c)' = 0</p>
+                    <p>Производная степенной функции: (xⁿ)' = n·xⁿ⁻¹</p>
+                    <p>Производная суммы: (f+g)' = f' + g'</p>
+                `,
+                cases: {
+                    easy: [
+                        { problem: "f(x) = x³, найти f'(2)", answer: 12, evidence: "💳 Код расшифрован" },
+                        { problem: "f(x) = 5x², найти f'(3)", answer: 30, evidence: "📊 Транзакции проанализированы" },
+                        { problem: "f(x) = 3x² + 2x, найти f'(1)", answer: 8, evidence: "🔢 Последовательность разгадана" },
+                        { problem: "f(x) = x⁴ - 2x², найти f'(2)", answer: 24, evidence: "💰 Сумма определена" },
+                        { problem: "f(x) = (x² + 3x)², найти f'(1)", answer: 40, evidence: "🔐 Шифр взломан" }
+                    ],
+                    medium: [
+                        { problem: "f(x) = 4x³ - 3x² + 2x, найти f'(2)", answer: 38, evidence: "💳 Код расшифрован" },
+                        { problem: "f(x) = x⁴ + 2x³ - x, найти f'(1)", answer: 9, evidence: "📊 Транзакции проанализированы" },
+                        { problem: "f(x) = (x² + 1)(x - 2), найти f'(2)", answer: 5, evidence: "🔢 Последовательность разгадана" },
+                        { problem: "f(x) = 3x⁵ - 2x³ + 7, найти f'(1)", answer: 9, evidence: "💰 Сумма определена" },
+                        { problem: "f(x) = (2x + 1)³, найти f'(1)", answer: 54, evidence: "🔐 Шифр взломан" }
+                    ],
+                    hard: [
+                        { problem: "f(x) = x⁵ - 3x⁴ + 2x³ - x² + 5, найти f'(2)", answer: 4, evidence: "💳 Код расшифрован" },
+                        { problem: "f(x) = (x³ + 2x)(x² - 1), найти f'(2)", answer: 90, evidence: "📊 Транзакции проанализированы" },
+                        { problem: "f(x) = (x² + 3x + 1)², найти f'(1)", answer: 50, evidence: "🔢 Последовательность разгадана" },
+                        { problem: "f(x) = x⁶ - 4x⁴ + 3x², найти f'(2)", answer: 76, evidence: "💰 Сумма определена" },
+                        { problem: "f(x) = (x² + 1)³, найти f'(2)", answer: 300, evidence: "🔐 Шифр взломан" }
+                    ]
+                },
+                victory: "Финансовые махинации раскрыты! Мошенники задержаны, деньги возвращены пострадавшим.",
+                cheatsheet: `
+                    <p><strong>Правила дифференцирования:</strong></p>
+                    <p>(c)' = 0 (c - константа)</p>
+                    <p>(xⁿ)' = n·xⁿ⁻¹</p>
+                    <p>(cf(x))' = c·f'(x)</p>
+                    <p>(f(x) + g(x))' = f'(x) + g'(x)</p>
+                    <p>(f(x) - g(x))' = f'(x) - g'(x)</p>
+                `
+            },
+            'function-analysis': {
+                title: "Исследование функций",
+                description: "Анализ маршрута беглеца через производные",
+                tutorial: `
+                    <p><strong>Исследование функций</strong> с помощью производных позволяет находить экстремумы и интервалы монотонности.</p>
+                    <p>Критические точки: f'(x) = 0 или f'(x) не существует</p>
+                    <p>Если f'(x) > 0, то функция возрастает</p>
+                    <p>Если f'(x) < 0, то функция убывает</p>
+                `,
+                cases: {
+                    easy: [
+                        { problem: "f(x) = x² - 4x + 3, найти f'(x) = 0", answer: 2, evidence: "🗺️ Начало маршрута" },
+                        { problem: "f(x) = x² - 6x + 8, найти x минимума", answer: 3, evidence: "📍 Точка поворота" },
+                        { problem: "f(x) = x³ - 3x², найти f'(x) > 0 при x > ?", answer: 2, evidence: "🚗 Скорость определена" },
+                        { problem: "f(x) = x³ - 3x, найти f''(x) = 0", answer: 0, evidence: "🎯 Финальная позиция" },
+                        { problem: "f(x) = -x² + 4x + 1, найти x максимума", answer: 2, evidence: "🕵️ След найден" }
+                    ],
+                    medium: [
+                        { problem: "f(x) = x³ - 6x² + 9x, найти f'(x) = 0", answer: 1, evidence: "🗺️ Начало маршрута" },
+                        { problem: "f(x) = x³ - 3x² - 9x + 5, найти x минимума", answer: 3, evidence: "📍 Точка поворота" },
+                        { problem: "f(x) = 2x³ - 3x² - 12x, найти f'(x) > 0 при x > 0 ?", answer: 2, evidence: "🚗 Скорость определена" },
+                        { problem: "f(x) = x⁴ - 4x³, найти f''(x) = 0", answer: 2, evidence: "🎯 Финальная позиция" },
+                        { problem: "f(x) = -2x² + 8x - 5, найти x максимума", answer: 2, evidence: "🕵️ След найден" }
+                    ],
+                    hard: [
+                        { problem: "f(x) = x⁴ - 8x² + 16, найти f'(x) = 0, в ответ введите больш. корень", answer: 2, evidence: "🗺️ Начало маршрута" },
+                        { problem: "f(x) = x³ - 12x, найти x минимума", answer: 2, evidence: "📍 Точка поворота" },
+                        { problem: "f(x) = 3x⁴ - 16x³ + 24x², найти f'(x) > 0 при x > 0 ?", answer: 2, evidence: "🚗 Скорость определена" },
+                        { problem: "f(x) = x⁵ - 5x³, найти f''(x) = 0 (округли до целого)", answer: 1, evidence: "🎯 Финальная позиция" },
+                        { problem: "f(x) = -x³ + 6x² - 9x + 2, найти x максимума", answer: 3, evidence: "🕵️ След найден" }
+                    ]
+                },
+                victory: "Маршрут беглеца определен! Преступник задержан в расчетной точке.",
+                cheatsheet: `
+                    <p><strong>Исследование функций:</strong></p>
+                    <p>1. Найти f'(x)</p>
+                    <p>2. Решить f'(x) = 0 - критические точки</p>
+                    <p>3. Определить знак f'(x) на интервалах</p>
+                    <p>4. f'(x) > 0 - функция возрастает</p>
+                    <p>5. f'(x) < 0 - функция убывает</p>
+                    <p>6. f''(x) = 0 - точка перегиба</p>
+                `
+            }
+        };
+
+        // Функции игры
+        function selectSection(section) {
+            currentSection = section;
+            document.getElementById('section-title').textContent = sections[section].title;
+            document.getElementById('section-description').textContent = sections[section].description;
+            
+            // Сбрасываем выбор сложности и найденные улики
+            currentDifficulty = '';
+            foundEvidence = [];
+            completedCases.clear();
+            wrongAttempts = {}; // Сбрасываем счетчик неправильных попыток
+            
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            difficultyBtns.forEach(btn => btn.classList.remove('active'));
+            
+            showScreen('screen-difficulty');
+        }
+
+        function selectDifficulty(difficulty, element) {
+            currentDifficulty = difficulty;
+            
+            // Активируем выбранную кнопку
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            difficultyBtns.forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function startTutorial() {
+            if (!currentDifficulty) {
+                alert('Пожалуйста, выберите уровень сложности!');
+                return;
+            }
+            
+            // Обновляем обучение
+            document.getElementById('tutorial-title').textContent = `📚 База знаний детектива - ${sections[currentSection].title}`;
+            document.getElementById('tutorial-content').innerHTML = sections[currentSection].tutorial;
+            
+            showScreen('screen-tutorial');
+        }
+
+        function startCase(caseNumber) {
+            currentCase = caseNumber;
+            const caseInfo = sections[currentSection].cases[currentDifficulty][caseNumber - 1];
+            
+            // Инициализируем счетчик попыток для этого дела
+            const caseKey = `${currentSection}-${currentDifficulty}-${caseNumber}`;
+            if (!wrongAttempts[caseKey]) {
+                wrongAttempts[caseKey] = 0;
+            }
+            
+            // Создаем HTML для дела
+            const caseHTML = `
+                <h1>${getCaseTitle(caseNumber)}</h1>
+                <div class="case-counter">Дело ${caseNumber} из ${totalCases}</div>
+                <div class="difficulty-indicator">Уровень сложности: ${getDifficultyName()} (${getPointsForDifficulty()} баллов)</div>
+                <div class="attempts-counter" id="attempts-counter-${caseNumber}">Попытки: ${wrongAttempts[caseKey]}/3</div>
+                <div class="clue-box">
+                    <p>${getCaseDescription(caseNumber)}</p>
+                    <p class="problem">${caseInfo.problem}</p>
+                    <input type="number" id="answer${caseNumber}" placeholder="Ответ">
+                    <div class="button-container">
+                        <button onclick="checkAnswer(${caseNumber}, ${caseInfo.answer})">Проверить решение</button>
+                        <button class="skip-button" id="skip-button-${caseNumber}" onclick="skipCase(${caseNumber})" style="display: ${wrongAttempts[caseKey] >= 3 ? 'inline-block' : 'none'};">Пропустить задание</button>
+                        <button class="next-button" id="next-button-${caseNumber}" onclick="nextCase(${caseNumber})" style="display: none;">Следующее дело →</button>
+                    </div>
+                    <div class="feedback" id="feedback${caseNumber}"></div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress" style="width: ${(caseNumber/totalCases)*100}%"></div>
+                </div>
+                <div class="evidence" id="current-evidence">
+                    ${generateEvidenceHTML()}
+                </div>
+                <div class="button-container">
+                    <button class="back-button" onclick="showScreen('screen-tutorial')">← Назад к обучению</button>
+                </div>
+            `;
+            
+            document.getElementById('screen-case-container').innerHTML = caseHTML;
+            showScreen('screen-case-container');
+        }
+
+        function getCaseTitle(caseNumber) {
+            const titles = ["🔐 Запертый сейф", "🌳 Карта парка", "⏰ Время встречи", "💎 Финальный шифр", "🔑 Последняя загадка"];
+            return titles[caseNumber - 1] || `Дело ${caseNumber}`;
+        }
+
+        function getCaseDescription(caseNumber) {
+            const descriptions = [
+                "Преступники спрятали координаты в коде сейфа.",
+                "Найдите номер нужного дерева по математическому шифру.",
+                "Информатор передал зашифрованное сообщение.",
+                "Упростите выражение, чтобы найти адрес.",
+                "Решите уравнение для получения финального ключа."
+            ];
+            return descriptions[caseNumber - 1] || "Решите математическую задачу для получения улики.";
+        }
+
+        function getDifficultyName() {
+            const names = { easy: "Новичок", medium: "Детектив", hard: "Эксперт" };
+            return names[currentDifficulty] || currentDifficulty;
+        }
+
+        function getPointsForDifficulty() {
+            const points = { easy: 10, medium: 20, hard: 30 };
+            return points[currentDifficulty] || 10;
+        }
+
+        function generateEvidenceHTML() {
+            let html = '<div class="evidence-item">🎯 Улики найдены: ' + foundEvidence.length + '/' + totalCases + '</div>';
+            
+            // Добавляем найденные улики
+            foundEvidence.forEach(evidence => {
+                html += `<div class="evidence-item evidence-found">${evidence}</div>`;
+            });
+            
+            return html;
+        }
+
+        function checkAnswer(caseNumber, correctAnswer) {
+            const input = document.getElementById(`answer${caseNumber}`);
+            const feedback = document.getElementById(`feedback${caseNumber}`);
+            const nextButton = document.getElementById(`next-button-${caseNumber}`);
+            const skipButton = document.getElementById(`skip-button-${caseNumber}`);
+            const attemptsCounter = document.getElementById(`attempts-counter-${caseNumber}`);
+            
+            if (!input || !input.value) {
+                if (feedback) {
+                    feedback.textContent = "❌ Введите ответ!";
+                    feedback.className = "feedback wrong";
+                }
+                return;
+            }
+            
+            const userAnswer = parseFloat(input.value);
+            const caseKey = `${currentSection}-${currentDifficulty}-${caseNumber}`;
+
+            if (userAnswer === correctAnswer) {
+                if (feedback) {
+                    feedback.textContent = "✅ Верно! Улика найдена!";
+                    feedback.className = "feedback correct";
+                }
+                
+                // Показываем кнопку "Следующее дело"
+                if (nextButton) {
+                    nextButton.style.display = 'inline-block';
+                }
+                
+                // Скрываем кнопку "Пропустить"
+                if (skipButton) {
+                    skipButton.style.display = 'none';
+                }
+                
+                // Добавляем улику в список найденных
+                const currentEvidence = sections[currentSection].cases[currentDifficulty][caseNumber - 1].evidence;
+                if (!foundEvidence.includes(currentEvidence)) {
+                    foundEvidence.push(currentEvidence);
+                }
+                
+                // Добавляем баллы только если дело еще не было решено
+                if (!completedCases.has(caseKey)) {
+                    const pointsEarned = getPointsForDifficulty();
+                    points += pointsEarned;
+                    updatePointsDisplay();
+                    completedCases.add(caseKey);
+                }
+                
+                // Обновляем отображение улик
+                const evidenceContainer = document.getElementById('current-evidence');
+                if (evidenceContainer) {
+                    evidenceContainer.innerHTML = generateEvidenceHTML();
+                }
+            } else {
+                // Увеличиваем счетчик неправильных попыток
+                wrongAttempts[caseKey]++;
+                
+                if (feedback) {
+                    feedback.textContent = "❌ Неверно! Попробуйте еще раз.";
+                    feedback.className = "feedback wrong";
+                }
+                
+                // Обновляем счетчик попыток
+                if (attemptsCounter) {
+                    attemptsCounter.textContent = `Попытки: ${wrongAttempts[caseKey]}/3`;
+                }
+                
+                // Показываем кнопку "Пропустить" после 3 неудачных попыток
+                if (wrongAttempts[caseKey] >= 3 && skipButton) {
+                    skipButton.style.display = 'inline-block';
+                    feedback.textContent += " Вы можете пропустить это задание.";
+                }
+            }
+        }
+
+        function skipCase(caseNumber) {
+            const caseKey = `${currentSection}-${currentDifficulty}-${caseNumber}`;
+            const currentEvidence = sections[currentSection].cases[currentDifficulty][caseNumber - 1].evidence;
+            
+            // Добавляем улику в список найденных (но без баллов)
+            if (!foundEvidence.includes(currentEvidence)) {
+                foundEvidence.push(currentEvidence);
+            }
+            
+            // Помечаем дело как завершенное
+            completedCases.add(caseKey);
+            
+            // Переходим к следующему делу
+            nextCase(caseNumber);
+        }
+
+        function nextCase(caseNumber) {
+            if (caseNumber < totalCases) {
+                startCase(caseNumber + 1);
+            } else {
+                showVictoryScreen();
+            }
+        }
+
+        function showVictoryScreen() {
+            const victoryMessage = document.getElementById('victory-message');
+            const pointsEarned = document.getElementById('points-earned');
+            
+            if (victoryMessage) {
+                victoryMessage.textContent = sections[currentSection].victory;
+            }
+            if (pointsEarned) {
+                pointsEarned.textContent = `Заработано баллов: ${points}!`;
+            }
+            
+            // Заполняем улики
+            const evidenceContainer = document.getElementById('victory-evidence');
+            if (evidenceContainer) {
+                evidenceContainer.innerHTML = '';
+                foundEvidence.forEach(evidence => {
+                    const evidenceItem = document.createElement('div');
+                    evidenceItem.className = 'evidence-item evidence-found';
+                    evidenceItem.textContent = evidence;
+                    evidenceContainer.appendChild(evidenceItem);
+                });
+            }
+            
+            showScreen('screen-victory');
+        }
+
+        function showScreen(screenId) {
+            // Скрыть все экраны
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Показать нужный экран
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
+        }
+
+        function updatePointsDisplay() {
+            const pointsDisplay = document.getElementById('points-display');
+            if (pointsDisplay) {
+                pointsDisplay.textContent = `Баллы: ${points}`;
+            }
+        }
+
+        function returnToMain() {
+            // Обновляем шпаргалку если нужно
+            if (currentSection) {
+                const cheatsheetTitle = document.getElementById('cheatsheet-title');
+                const cheatsheetContent = document.getElementById('cheatsheet-content');
+                
+                if (cheatsheetTitle) {
+                    cheatsheetTitle.textContent = `📖 Шпаргалка детектива - ${sections[currentSection].title}`;
+                }
+                if (cheatsheetContent) {
+                    cheatsheetContent.innerHTML = sections[currentSection].cheatsheet;
+                }
+            }
+            
+            showScreen('screen-start');
+        }
+
+        // Инициализация
+        updatePointsDisplay();
+    </script>
+</body>
+</html>
